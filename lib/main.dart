@@ -4,6 +4,8 @@ void main() {
   runApp(FriendlyChatApp());
 }
 
+String _name = 'Lucas Robaert';
+
 class FriendlyChatApp extends StatelessWidget {
   const FriendlyChatApp({
     Key? key,
@@ -24,7 +26,9 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final List<ChatMessage> _message = [];
   final _textController = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   Widget _buildTextComposer() {
     return Container(
@@ -36,6 +40,7 @@ class _ChatScreenState extends State<ChatScreen> {
               controller: _textController,
               onSubmitted: _handleSubmitted,
               decoration: InputDecoration.collapsed(hintText: 'Send a message'),
+              focusNode: _focusNode,
             ),
           ),
           IconTheme(
@@ -55,13 +60,69 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _handleSubmitted(String text) {
     _textController.clear();
+    ChatMessage message = ChatMessage(text: text);
+
+    setState(() {
+      _message.insert(0, message);
+    });
+
+    _focusNode.requestFocus();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('FriendlyChat')),
-      body: _buildTextComposer(),
+      body: Column(
+        children: [
+          Flexible(
+            child: ListView.builder(
+              padding: EdgeInsets.all(8.0),
+              reverse: true,
+              itemBuilder: (_, int index) => _message[index],
+              itemCount: _message.length,
+            ),
+          ),
+          Divider(height: 1.0,),
+          Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).cardColor
+            ),
+            child: _buildTextComposer(),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class ChatMessage extends StatelessWidget {
+  ChatMessage({required this.text});
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(right: 16.0),
+            child: CircleAvatar(child: Text(_name[0]),),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(_name, style: Theme.of(context).textTheme.headline4,),
+              Container(
+                margin: EdgeInsets.only(top: 5.0),
+                child: Text(text),
+              )
+            ],
+          )
+        ],
+      ),
     );
   }
 }
